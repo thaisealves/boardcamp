@@ -1,7 +1,7 @@
 import postCategorySchema from "../schemas/postCategorySchema.js";
 import connection from "../dbStrategy/postgres.js";
 
-export async function postcategoryMiddleware(req, res, next) {
+export async function postCategoryMiddleware(req, res, next) {
   const { name } = req.body;
   const { rows: categories } = await connection.query(
     "SELECT * FROM categories"
@@ -12,9 +12,9 @@ export async function postcategoryMiddleware(req, res, next) {
     return res.status(400).send("O nome de categoria é obrigatório");
   }
 
-  if (categories.map((c) => c.name === name)) {
+  if (categories.find((c) => c.name === name)) {
     return res.status(409).send("Categoria já existente");
   }
-  res.locals.name = name;
+  res.locals.categoryName = name;
   next();
 }

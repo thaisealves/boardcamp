@@ -1,9 +1,11 @@
 import connection from "../dbStrategy/postgres.js";
 
 export async function postCategories(req, res) {
-  const { name } = res.locals;
+  const { categoryName } = res.locals;
 
-  await connection.query(`INSERT INTO categories (name) VALUES ('${name}')`);
+  await connection.query(
+    `INSERT INTO categories (name) VALUES ('${categoryName}')`
+  );
 
   res.sendStatus(201);
 }
