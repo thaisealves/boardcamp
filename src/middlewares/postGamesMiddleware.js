@@ -8,11 +8,11 @@ export async function postGamesMiddleware(req, res, next) {
     `SELECT * FROM categories`
   );
   const validation = gameSchema.validate(req.body);
-  if (validation.error || !categories.filter((g) => g.id === categoryId)) {
+  if (validation.error || !categories.find((c) => c.id === categoryId)) {
     console.log(validation.error);
     return res.status(400).send("Não foi possível adicionar este jogo");
   }
-
+  
   if (games.find((g) => g.name === name)) {
     return res.status(409).send("Jogo já existente");
   }
