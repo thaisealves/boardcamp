@@ -1,13 +1,12 @@
 import connection from "../dbStrategy/postgres.js";
 
 export async function postCategories(req, res) {
-  const { name } = res.locals;
-  //   try {
-  await connection.query(`INSERT INTO categories (name) VALUES ('${name}')`);
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.sendStatus(500);
-  //   }
+  const { categoryName } = res.locals;
+
+  await connection.query(
+    `INSERT INTO categories (name) VALUES ('${categoryName}')`
+  );
+
   res.sendStatus(201);
 }
 export async function getCategories(req, res) {
