@@ -22,10 +22,10 @@ export async function getCustomers(req, res) {
     if (queryCpf) {
       const likeCpf = queryCpf + "%";
       query = `SELECT * FROM customers
-      WHERE cpf LIKE '${likeCpf}'
+      WHERE cpf LIKE '${likeCpf}' ORDER BY id
       `;
     } else {
-      query = `SELECT * FROM customers`;
+      query = `SELECT * FROM customers ORDER BY id`;
     }
     const { rows: listCostumers } = await connection.query(query);
     res.send(listCostumers);
@@ -34,21 +34,37 @@ export async function getCustomers(req, res) {
   }
 }
 export async function getCustomersById(req, res) {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-      const { rows: idCostumer } = await connection.query(
-        `SELECT * FROM customers WHERE id=${id}`
-      );
-  
-      if (idCostumer.length === 0) {
-        return res.status(404).send("Cliente não existe");
-      } else {
-        return res.send(idCostumer);
-      }
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
+  try {
+    const { rows: idCostumer } = await connection.query(
+      `SELECT * FROM customers WHERE id=${id}`
+    );
+
+    if (idCostumer.length === 0) {
+      return res.status(404).send("Cliente não existe");
+    } else {
+      return res.send(idCostumer[0]);
     }
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
 }
-export async function putCustomers(req, res) {}
+export async function putCustomers(req, res) {
+  const { customer } = res.locals;
+  const { id } = req.params;
+
+  try {
+    await connection.query(
+      `UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4
+    WHERE id = ${id}`,
+      [customer.name, customer.phone, customer.cpf, customer.birthday]
+    );
+
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}

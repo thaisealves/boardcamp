@@ -5,11 +5,14 @@ import {
   getCustomersById,
   putCustomers,
 } from "../controllers/customersController.js";
-import { postCustomerMiddleware } from "../middlewares/postCustomerMiddleware.js";
+import {
+  postCustomerMiddleware,
+  putCustomerMiddleware,
+} from "../middlewares/customerMiddleware.js";
 const router = Router();
 
 router.post("/customers", postCustomerMiddleware, postCustomers);
 router.get("/customers", getCustomers);
 router.get("/customers/:id", getCustomersById);
-router.put("/customers/:id", putCustomers);
+router.put("/customers/:id", putCustomerMiddleware, putCustomers);
 export default router;
