@@ -29,18 +29,16 @@ export async function getGames(req, res) {
   try {
     if (queryName) {
       const lowerCaseQueryName = queryName.toLowerCase() + "%";
-      console.log(lowerCaseQueryName);
       query = `SELECT games.*, categories.name as "categoryName" FROM games
       JOIN categories
       ON games."categoryId" = categories.id
-      WHERE LOWER(games.name) LIKE '${lowerCaseQueryName}'
+      WHERE LOWER(games.name) LIKE '${lowerCaseQueryName}' ORDER BY id
       `;
     } else {
       query = `SELECT games.*, categories.name as "categoryName" FROM games
       JOIN categories
-      ON games."categoryId" = categories.id`;
+      ON games."categoryId" = categories.id ORDER BY id`;
     }
-    console.log(query);
     const { rows: listGames } = await connection.query(query);
     res.send(listGames);
   } catch (error) {

@@ -11,7 +11,7 @@ export async function postCategories(req, res) {
 }
 export async function getCategories(req, res) {
   const { rows: categories } = await connection.query(
-    "SELECT * FROM categories"
+    "SELECT * FROM categories ORDER BY id"
   );
 
   res.send(categories);
