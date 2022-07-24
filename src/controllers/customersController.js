@@ -34,6 +34,21 @@ export async function getCustomers(req, res) {
   }
 }
 export async function getCustomersById(req, res) {
+    const { id } = req.params;
 
+    try {
+      const { rows: idCostumer } = await connection.query(
+        `SELECT * FROM customers WHERE id=${id}`
+      );
+  
+      if (idCostumer.length === 0) {
+        return res.status(404).send("Cliente não existe");
+      } else {
+        return res.send(idCostumer);
+      }
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
 }
 export async function putCustomers(req, res) {}
