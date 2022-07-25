@@ -34,38 +34,34 @@ export async function postRentals(req, res) {
 export async function getRentals(req, res) {
   const { customerId: queryCustomerId } = req.query;
   const { gameId: queryGameId } = req.query;
-
   try {
     if (queryCustomerId) {
       const { rows: listRentals } = await connection.query(
-        `SELECT rentals.*, c.id, c.name, g.id, g.name, g."categoryId", categories.name as "categoryName"  FROM rentals
-        JOIN customers c
-        ON rentals."customerId" = c.id
-        JOIN games g 
-        ON rentals."gameId" = g.id
-        JOIN categories
-        ON games."categoryId" = categories.id
-        WHERE "customerId" = $1 ORDER BY id
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id
+        WHERE "customerId" = $1  ORDER BY rentals.id
     `,
-        [queryCustomerId]
+        [Number(queryCustomerId)]
       );
-      res.send(listRentals);
-    }
-    if (queryGameId) {
+      return res.send(listRentals);
+    } else if (queryGameId) {
       const { rows: listRentals } = await connection.query(
-        `SELECT rentals.*, c.id, c.name, g.id, g.name, g."categoryId", categories.name as "categoryName"  FROM rentals
-        JOIN customers c
-        ON rentals."customerId" = c.id
-        JOIN games g 
-        ON rentals."gameId" = g.id
-        JOIN categories
-        ON games."categoryId" = categories.id
-        WHERE "gameId" = $1 ORDER BY id
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id
+        WHERE "gameId" = $1  ORDER BY rentals.id
             `,
         [queryGameId]
       );
 
-      res.send(listRentals);
+      return res.send(listRentals);
     } else {
       const { rows: listRentals } = await connection.query(
         `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
@@ -73,14 +69,46 @@ export async function getRentals(req, res) {
         FROM rentals 
         JOIN games g ON rentals."gameId"= g.id
         JOIN categories ON g."categoryId" = categories.id
-        JOIN customers c ON rentals."customerId"= c.id`
+        JOIN customers c ON rentals."customerId"= c.id
+        ORDER BY rentals.id
+        `
       );
-      res.send(listRentals);
+      return res.send(listRentals);
     }
   } catch (error) {
     res.status(500).send("Não foi possível encontrar os aluguéis.");
   }
 }
 
-export async function updateRentals(req, res) {}
+export async function endRental(req, res) {
+  const { id } = req.params;
+  const newReturnDate = dayjs().format("YYYY-MM-DD");
+  let newDelayFee = null;
+  const { rows: idGame } = await connection.query(
+    `SELECT games."pricePerDay", rentals.* FROM games 
+  JOIN rentals ON games.id = rentals."gameId"
+  WHERE rentals.id = $1`,
+    [id]
+  );
+  const returnExpected = dayjs(idGame[0].rentDate).add(
+    idGame[0].daysRented,
+    "days"
+  );
+  const delay = dayjs().diff(returnExpected, "d");
+
+  if (delay > 0) {
+    newDelayFee = idGame[0].pricePerDay * delay;
+  }
+  try {
+    await connection.query(
+      `UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = ${id}`,
+      [newReturnDate, newDelayFee]
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
 export async function deleteRentals(req, res) {}

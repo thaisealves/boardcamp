@@ -1,7 +1,6 @@
 import connection from "../dbStrategy/postgres.js";
 import rentalsSchema from "../schemas/rentalsSchema.js";
-
-export async function rentalsMiddleware(req, res, next) {
+export async function postRentalsMiddleware(req, res, next) {
   const { customerId, gameId, daysRented } = req.body;
   const { rows: games } = await connection.query(`SELECT * FROM games`);
   const { rows: customers } = await connection.query(`SELECT * FROM customers`);
@@ -32,7 +31,6 @@ async function getRentals(gameId) {
     WHERE rentals."returnDate" IS NULL AND rentals."gameId" = $1`,
     [gameId]
   );
-  console.log(rentalsList);
   if (
     rentalsList.length > 0 &&
     rentalsList.length >= rentalsList[0].stockTotal
@@ -40,4 +38,21 @@ async function getRentals(gameId) {
     return true;
   }
   return false;
+}
+
+export async function updateRentalMiddleware(req, res, next) {
+  const { id } = req.params;
+  const { rows: rentals } = await connection.query(
+    `SELECT * FROM rentals WHERE id = $1`,
+    [id]
+  );
+  if (!rentals.find((r) => r.id === Number(id))) {
+    return res.status(404).send("Esse aluguel não existe");
+  }
+
+  if (rentals[0].returnDate !== null) {
+    return res.status(400).send("Aluguel já finalizado");
+  }
+
+  next();
 }
