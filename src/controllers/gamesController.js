@@ -24,6 +24,8 @@ export async function postGames(req, res) {
 
 export async function getGames(req, res) {
   const { name: queryName } = req.query;
+  const { offset: queryOffset } = req.query;
+  const { limit: queryLimit } = req.query;
 
   let query;
   try {
@@ -32,12 +34,45 @@ export async function getGames(req, res) {
       query = `SELECT games.*, categories.name as "categoryName" FROM games
       JOIN categories
       ON games."categoryId" = categories.id
-      WHERE LOWER(games.name) LIKE '${lowerCaseQueryName}' ORDER BY id
+      WHERE LOWER(games.name) LIKE '${lowerCaseQueryName}' ORDER BY games.id
       `;
+    } else if (queryLimit && queryOffset) {
+      const { rows: listGames } = await connection.query(
+        `SELECT games.*, categories.name as "categoryName" FROM games
+        JOIN categories
+        ON games."categoryId" = categories.id 
+        ORDER BY games.id LIMIT $1 OFFSET $2
+            `,
+        [Number(queryLimit), Number(queryOffset)]
+      );
+
+      return res.send(listGames);
+    } else if (queryOffset) {
+      const { rows: listGames } = await connection.query(
+        `SELECT games.*, categories.name as "categoryName" FROM games
+        JOIN categories
+        ON games."categoryId" = categories.id 
+        ORDER BY games.id OFFSET $1
+            `,
+        [Number(queryOffset)]
+      );
+
+      return res.send(listGames);
+    } else if (queryLimit) {
+      const { rows: listGames } = await connection.query(
+        `SELECT games.*, categories.name as "categoryName" FROM games
+        JOIN categories
+        ON games."categoryId" = categories.id 
+        ORDER BY games.id LIMIT $1
+            `,
+        [Number(queryLimit)]
+      );
+
+      return res.send(listGames);
     } else {
       query = `SELECT games.*, categories.name as "categoryName" FROM games
       JOIN categories
-      ON games."categoryId" = categories.id ORDER BY id`;
+      ON games."categoryId" = categories.id ORDER BY games.id`;
     }
     const { rows: listGames } = await connection.query(query);
     res.send(listGames);
