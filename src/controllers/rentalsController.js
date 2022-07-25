@@ -34,6 +34,10 @@ export async function postRentals(req, res) {
 export async function getRentals(req, res) {
   const { customerId: queryCustomerId } = req.query;
   const { gameId: queryGameId } = req.query;
+  const { offset: queryOffset } = req.query;
+  const { limit: queryLimit } = req.query;
+  console.log(queryLimit);
+  console.log(queryOffset);
   try {
     if (queryCustomerId) {
       const { rows: listRentals } = await connection.query(
@@ -58,7 +62,49 @@ export async function getRentals(req, res) {
         JOIN customers c ON rentals."customerId"= c.id
         WHERE "gameId" = $1  ORDER BY rentals.id
             `,
-        [queryGameId]
+        [Number(queryGameId)]
+      );
+
+      return res.send(listRentals);
+    } else if (queryLimit && queryOffset) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id
+         ORDER BY rentals.id LIMIT $1 OFFSET $2
+            `,
+        [Number(queryLimit), Number(queryOffset)]
+      );
+
+      return res.send(listRentals);
+    } else if (queryOffset) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id
+         ORDER BY rentals.id OFFSET $1
+            `,
+        [Number(queryOffset)]
+      );
+
+      return res.send(listRentals);
+    } else if (queryLimit) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id
+         ORDER BY rentals.id LIMIT $1
+            `,
+        [Number(queryLimit)]
       );
 
       return res.send(listRentals);
