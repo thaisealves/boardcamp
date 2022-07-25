@@ -10,9 +10,9 @@ export async function postRentalsMiddleware(req, res, next) {
     validation.error ||
     !customers.find((c) => c.id === customerId) ||
     !games.find((g) => g.id === gameId) ||
-    (await getRentals(gameId))
+    (await possibleRentals(gameId))
   ) {
-    console.log(await getRentals(gameId));
+    console.log(await possibleRentals(gameId));
     console.log(!games.find((g) => g.id === gameId));
     console.log(!customers.find((c) => c.id === customerId));
     console.log(validation.error);
@@ -23,7 +23,7 @@ export async function postRentalsMiddleware(req, res, next) {
   next();
 }
 
-async function getRentals(gameId) {
+async function possibleRentals(gameId) {
   const { rows: rentalsList } = await connection.query(
     `SELECT rentals.id, games."stockTotal" FROM rentals 
     JOIN games 
@@ -54,5 +54,20 @@ export async function updateRentalMiddleware(req, res, next) {
     return res.status(400).send("Aluguel já finalizado");
   }
 
+  next();
+}
+
+export async function deleteRentalMiddleware(req, res, next) {
+  const { id } = req.params;
+  const { rows: rentals } = await connection.query(
+    `SELECT * FROM rentals WHERE id = $1`,
+    [id]
+  );
+  if (rentals.length === 0) {
+    return res.status(404).send("ID não corresponde a algum aluguel");
+  }
+  if (rentals[0].returnDate === null) {
+    return res.status(400).send("Aluguel ainda não finalizado.");
+  }
   next();
 }

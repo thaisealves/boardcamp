@@ -111,4 +111,13 @@ export async function endRental(req, res) {
     res.sendStatus(500);
   }
 }
-export async function deleteRentals(req, res) {}
+export async function deleteRentals(req, res) {
+  const { id } = req.params;
+  try {
+    await connection.query(`DELETE FROM rentals WHERE id = $1`, [id]);
+    res.status(200).send("Aluguel deletado!");
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+}
