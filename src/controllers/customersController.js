@@ -27,29 +27,29 @@ export async function getCustomers(req, res) {
       WHERE cpf LIKE '${likeCpf}' ORDER BY id
       `;
     } else if (queryLimit && queryOffset) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listCustomers } = await connection.query(
         `SELECT * FROM customers ORDER BY id LIMIT $1 OFFSET $2
             `,
         [Number(queryLimit), Number(queryOffset)]
       );
 
-      return res.send(listRentals);
+      return res.send(listCustomers);
     } else if (queryOffset) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listCustomers } = await connection.query(
         `SELECT * FROM customers ORDER BY id OFFSET $1
             `,
         [Number(queryOffset)]
       );
 
-      return res.send(listRentals);
+      return res.send(listCustomers);
     } else if (queryLimit) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listCustomers } = await connection.query(
         `SELECT * FROM customers ORDER BY id LIMIT $1
             `,
         [Number(queryLimit)]
       );
 
-      return res.send(listRentals);
+      return res.send(listCustomers);
     } else {
       query = `SELECT * FROM customers ORDER BY id`;
     }

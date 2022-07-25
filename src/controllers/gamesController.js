@@ -37,7 +37,7 @@ export async function getGames(req, res) {
       WHERE LOWER(games.name) LIKE '${lowerCaseQueryName}' ORDER BY games.id
       `;
     } else if (queryLimit && queryOffset) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listGames } = await connection.query(
         `SELECT games.*, categories.name as "categoryName" FROM games
         JOIN categories
         ON games."categoryId" = categories.id 
@@ -46,9 +46,9 @@ export async function getGames(req, res) {
         [Number(queryLimit), Number(queryOffset)]
       );
 
-      return res.send(listRentals);
+      return res.send(listGames);
     } else if (queryOffset) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listGames } = await connection.query(
         `SELECT games.*, categories.name as "categoryName" FROM games
         JOIN categories
         ON games."categoryId" = categories.id 
@@ -57,9 +57,9 @@ export async function getGames(req, res) {
         [Number(queryOffset)]
       );
 
-      return res.send(listRentals);
+      return res.send(listGames);
     } else if (queryLimit) {
-      const { rows: listRentals } = await connection.query(
+      const { rows: listGames } = await connection.query(
         `SELECT games.*, categories.name as "categoryName" FROM games
         JOIN categories
         ON games."categoryId" = categories.id 
@@ -68,7 +68,7 @@ export async function getGames(req, res) {
         [Number(queryLimit)]
       );
 
-      return res.send(listRentals);
+      return res.send(listGames);
     } else {
       query = `SELECT games.*, categories.name as "categoryName" FROM games
       JOIN categories
