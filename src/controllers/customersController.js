@@ -16,6 +16,8 @@ export async function postCustomers(req, res) {
 }
 export async function getCustomers(req, res) {
   const { cpf: queryCpf } = req.query;
+  const { offset: queryOffset } = req.query;
+  const { limit: queryLimit } = req.query;
 
   let query;
   try {
@@ -24,6 +26,30 @@ export async function getCustomers(req, res) {
       query = `SELECT * FROM customers
       WHERE cpf LIKE '${likeCpf}' ORDER BY id
       `;
+    } else if (queryLimit && queryOffset) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT * FROM customers ORDER BY id LIMIT $1 OFFSET $2
+            `,
+        [Number(queryLimit), Number(queryOffset)]
+      );
+
+      return res.send(listRentals);
+    } else if (queryOffset) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT * FROM customers ORDER BY id OFFSET $1
+            `,
+        [Number(queryOffset)]
+      );
+
+      return res.send(listRentals);
+    } else if (queryLimit) {
+      const { rows: listRentals } = await connection.query(
+        `SELECT * FROM customers ORDER BY id LIMIT $1
+            `,
+        [Number(queryLimit)]
+      );
+
+      return res.send(listRentals);
     } else {
       query = `SELECT * FROM customers ORDER BY id`;
     }

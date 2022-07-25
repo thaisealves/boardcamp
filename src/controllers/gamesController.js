@@ -62,7 +62,8 @@ export async function getGames(req, res) {
       const { rows: listRentals } = await connection.query(
         `SELECT games.*, categories.name as "categoryName" FROM games
         JOIN categories
-        ON games."categoryId" = categories.id ORDER BY games.id LIMIT $1
+        ON games."categoryId" = categories.id 
+        ORDER BY games.id LIMIT $1
             `,
         [Number(queryLimit)]
       );
