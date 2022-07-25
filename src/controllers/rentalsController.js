@@ -68,13 +68,12 @@ export async function getRentals(req, res) {
       res.send(listRentals);
     } else {
       const { rows: listRentals } = await connection.query(
-        `SELECT rentals.*, c.id, c.name, g.id, g.name, g."categoryId", categories.name as "categoryName"  FROM rentals
-        JOIN customers c
-        ON rentals."customerId" = c.id
-        JOIN games g 
-        ON rentals."gameId" = g.id
-        JOIN categories
-      ON games."categoryId" = categories.id ORDER BY id`
+        `SELECT rentals.*, json_build_object('id', c.id, 'name', c.name ) AS "customer", 
+        json_build_object('id', g.id, 'name', g.name, 'categoryId', g."categoryId", 'categoryName', categories.name ) AS "game"
+        FROM rentals 
+        JOIN games g ON rentals."gameId"= g.id
+        JOIN categories ON g."categoryId" = categories.id
+        JOIN customers c ON rentals."customerId"= c.id`
       );
       res.send(listRentals);
     }

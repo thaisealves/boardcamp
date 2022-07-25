@@ -29,7 +29,7 @@ async function getRentals(gameId) {
     `SELECT rentals.id, games."stockTotal" FROM rentals 
     JOIN games 
     ON rentals."gameId" = games.id  
-    WHERE rentals."returnDate" = null AND rentals."gameId" = $1`,
+    WHERE rentals."returnDate" IS NULL AND rentals."gameId" = $1`,
     [gameId]
   );
   console.log(rentalsList);
